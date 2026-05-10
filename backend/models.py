@@ -2,6 +2,25 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
+# --- Auth models ---
+class UserRegister(BaseModel):
+    email: str
+    password: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    created_at: Optional[str] = None
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
 class Prompt(BaseModel):
     id: Optional[int] = None
     title: str
@@ -14,6 +33,8 @@ class Prompt(BaseModel):
     trend_score: float = 50.0
     usage_count: int = 0
     source: str = "crawler"
+    collection_folder: Optional[str] = None
+    user_id: Optional[int] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 

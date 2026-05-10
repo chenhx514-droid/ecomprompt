@@ -26,8 +26,17 @@ def init_db():
             trend_score REAL DEFAULT 50.0,
             usage_count INTEGER DEFAULT 0,
             source TEXT DEFAULT 'crawler',
+            collection_folder TEXT DEFAULT '默认',
+            user_id INTEGER REFERENCES users(id),
             created_at TEXT DEFAULT (datetime('now')),
             updated_at TEXT DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL UNIQUE,
+            hashed_password TEXT NOT NULL,
+            created_at TEXT DEFAULT (datetime('now'))
         );
 
         CREATE TABLE IF NOT EXISTS trends (
@@ -53,5 +62,20 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_trends_category ON trends(category);
         CREATE INDEX IF NOT EXISTS idx_trends_heat ON trends(heat DESC);
     """)
+    # 迁移：为旧数据库添加 collection_folder 列
+    try:
+        conn.execute("ALTER TABLE prompts ADD COLUMN collection_folder TEXT DEFAULT '默认'")
+    except sqlite3.OperationalError:
+        pass
+    # 迁移：为旧数据库添加 user_id 列
+    try:
+        conn.execute("ALTER TABLE prompts ADD COLUMN user_id INTEGER REFERENCES users(id)")
+    except sqlite3.OperationalError:
+        pass
+    # 迁移：添加 user_id 索引
+    try:
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_prompts_user_id ON prompts(user_id)")
+    except sqlite3.OperationalError:
+        pass
     conn.commit()
     conn.close()

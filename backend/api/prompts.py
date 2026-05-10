@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
+from typing import Optional
 from database import get_connection
 from models import Prompt, PromptListResponse
+from api.auth import get_optional_user
 import json
 
 router = APIRouter()
@@ -15,7 +17,9 @@ def list_prompts(
     output_type: str = Query(""),
     sort: str = Query("trend_score"),
     search: str = Query(""),
-    source: str = Query("")
+    source: str = Query(""),
+    folder: str = Query(""),
+    current_user: Optional[dict] = Depends(get_optional_user),
 ):
     conn = get_connection()
     conditions = []
@@ -34,8 +38,17 @@ def list_prompts(
         conditions.append("output_type = ?")
         params.append(output_type)
     if source:
+        if source == "user_collect":
+            if current_user is None:
+                conn.close()
+                return PromptListResponse(items=[], total=0, page=page, page_size=page_size)
+            conditions.append("user_id = ?")
+            params.append(current_user["user_id"])
         conditions.append("source = ?")
         params.append(source)
+    if folder:
+        conditions.append("collection_folder = ?")
+        params.append(folder)
     if search:
         conditions.append("(title LIKE ? OR content LIKE ?)")
         params.extend([f"%{search}%", f"%{search}%"])
@@ -52,7 +65,6 @@ def list_prompts(
     items = []
     for row in rows:
         d = dict(row)
-        d["preview_images"] = json.loads(d.get("preview_images", "[]"))
         items.append(Prompt(**d))
 
     conn.close()
@@ -66,7 +78,6 @@ def get_prompt(prompt_id: int):
     if not row:
         raise HTTPException(status_code=404, detail="Prompt not found")
     d = dict(row)
-    d["preview_images"] = json.loads(d.get("preview_images", "[]"))
     return Prompt(**d)
 
 @router.post("/prompts/{prompt_id}/use")
