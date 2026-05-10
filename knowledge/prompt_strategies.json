@@ -1,0 +1,28 @@
+{
+  "strategies": [
+    {
+      "category": "服饰",
+      "scenario": "新品",
+      "output_type": "主图",
+      "skeleton": "E-commerce product photography of {product_desc}, {style} style, studio lighting, clean {bg_color} background, front view and detail shot, 8K, professional fashion photography, {season} collection"
+    },
+    {
+      "category": "服饰",
+      "scenario": "大促",
+      "output_type": "文案",
+      "skeleton": "Write a compelling e-commerce product description for {product_name}. Highlight: 1) {feature_1} 2) {feature_2} 3) {feature_3}. Include promotional language for {festival_name}, emphasize limited-time discount, call-to-action at the end, target audience: {target_audience}, tone: {tone}"
+    },
+    {
+      "category": "美妆",
+      "scenario": "新品",
+      "output_type": "主图",
+      "skeleton": "Professional beauty product photography, {product_type} on {surface}, {lighting} lighting, macro shot showing texture, minimalist composition, {color_scheme} color palette, luxury cosmetic aesthetic"
+    },
+    {
+      "category": "3C数码",
+      "scenario": "日常",
+      "output_type": "标题",
+      "skeleton": "Generate 5 SEO-optimized product titles for {product_name}. Include: brand + model + key specs ({specs}) + use case + emotional hook. Max 60 chars each. Platform: {platform}"
+    }
+  ]
+}
