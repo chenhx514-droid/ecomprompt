@@ -56,7 +56,7 @@ app.include_router(collect_router, prefix="/api", tags=["collect"])
 app.include_router(auth_router, prefix="/api", tags=["auth"])
 
 # 静态文件服务 — 上传的图片
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "images")
+UPLOAD_DIR = os.environ.get("UPLOAD_DIR", os.path.join(os.path.dirname(__file__), "..", "data", "images"))
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/api/images", StaticFiles(directory=UPLOAD_DIR), name="images")
 
@@ -78,6 +78,12 @@ def trigger_crawl():
     t = threading.Thread(target=run_crawlers)
     t.start()
     return {"ok": True, "message": "Crawlers started in background"}
+
+# 生产环境：serve 前端静态文件（必须在所有 /api 路由注册之后）
+FRONTEND_DIR = os.environ.get("FRONTEND_DIR", os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
+if os.path.isdir(FRONTEND_DIR):
+    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+    print(f"[startup] Serving frontend from {FRONTEND_DIR}")
 
 if __name__ == "__main__":
     import uvicorn

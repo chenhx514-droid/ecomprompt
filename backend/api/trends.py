@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Query
 from database import get_connection
 import json
+import os
 
 router = APIRouter()
 
-TREND_CALENDAR_PATH = "knowledge/trend_calendar.json"
+TREND_CALENDAR_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "knowledge", "trend_calendar.json")
 
 @router.get("/trends/hot-categories")
 def hot_categories():

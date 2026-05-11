@@ -1,0 +1,30 @@
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY backend/requirements.txt ./backend/
+RUN pip install --no-cache-dir -r backend/requirements.txt
+
+COPY frontend/package.json frontend/package-lock.json* ./frontend/
+RUN cd frontend && npm install
+COPY frontend/ ./frontend/
+RUN cd frontend && npm run build
+
+COPY backend/ ./backend/
+COPY knowledge/ ./knowledge/
+
+RUN mkdir -p /data/images
+
+ENV FRONTEND_DIR=/app/frontend/dist
+ENV DB_PATH=/data/prompts.db
+ENV UPLOAD_DIR=/data/images
+
+EXPOSE 8000
+
+WORKDIR /app/backend
+CMD ["uvicorn", "main_light:app", "--host", "0.0.0.0", "--port", "8000"]
