@@ -7,6 +7,6 @@ services:
     startCommand: cd backend && uvicorn main_light:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: FRONTEND_DIR
-        value: frontend/dist
+        value: ../frontend/dist
       - key: JWT_SECRET
         value: ecomprompt-prod-2026
