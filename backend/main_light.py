@@ -55,8 +55,10 @@ app.include_router(import_router, prefix="/api", tags=["import"])
 app.include_router(collect_router, prefix="/api", tags=["collect"])
 app.include_router(auth_router, prefix="/api", tags=["auth"])
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # 静态文件服务 — 上传的图片
-UPLOAD_DIR = os.environ.get("UPLOAD_DIR", os.path.join(os.path.dirname(__file__), "..", "data", "images"))
+UPLOAD_DIR = os.environ.get("UPLOAD_DIR", os.path.join(BASE_DIR, "..", "data", "images"))
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.mount("/api/images", StaticFiles(directory=UPLOAD_DIR), name="images")
 
@@ -80,7 +82,8 @@ def trigger_crawl():
     return {"ok": True, "message": "Crawlers started in background"}
 
 # 生产环境：serve 前端静态文件（必须在所有 /api 路由注册之后）
-FRONTEND_DIR = os.environ.get("FRONTEND_DIR", os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
+FRONTEND_DIR = os.environ.get("FRONTEND_DIR", os.path.join(BASE_DIR, "..", "frontend", "dist"))
+print(f"[startup] FRONTEND_DIR={FRONTEND_DIR} exists={os.path.isdir(FRONTEND_DIR)} cwd={os.getcwd()}")
 if os.path.isdir(FRONTEND_DIR):
     app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
     print(f"[startup] Serving frontend from {FRONTEND_DIR}")
