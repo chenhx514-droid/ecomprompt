@@ -3,15 +3,13 @@ services:
     name: ecomprompt
     runtime: python
     plan: free
-    buildCommand: |
-      pip install -r backend/requirements.txt
-      cd frontend && npm install && npm run build && cd ..
+    buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && uvicorn main_light:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: FRONTEND_DIR
         value: frontend/dist
       - key: JWT_SECRET
-        generateValue: true
+        value: ecomprompt-prod-2026
       - key: DB_PATH
         value: /var/data/prompts.db
       - key: UPLOAD_DIR
