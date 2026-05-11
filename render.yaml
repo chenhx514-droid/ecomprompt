@@ -10,7 +10,3 @@ services:
         value: frontend/dist
       - key: JWT_SECRET
         value: ecomprompt-prod-2026
-      - key: DB_PATH
-        value: /var/data/prompts.db
-      - key: UPLOAD_DIR
-        value: /var/data/images
