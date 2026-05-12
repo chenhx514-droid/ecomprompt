@@ -10,3 +10,5 @@ services:
         value: /opt/render/project/src/frontend/dist
       - key: JWT_SECRET
         value: ecomprompt-prod-2026
+      - key: ANTHROPIC_API_KEY
+        value: sk-c87d1db6373041d6a089a139bc23f4e8
