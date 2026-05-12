@@ -89,7 +89,17 @@ def trigger_crawl():
 FRONTEND_DIR = os.environ.get("FRONTEND_DIR", os.path.join(BASE_DIR, "..", "frontend", "dist"))
 print(f"[startup] FRONTEND_DIR={FRONTEND_DIR} exists={os.path.isdir(FRONTEND_DIR)} cwd={os.getcwd()}")
 if os.path.isdir(FRONTEND_DIR):
-    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="frontend_assets")
+
+    # SPA fallback: serve index.html for any unmatched route
+    from starlette.responses import FileResponse
+    @app.get("/{full_path:path}")
+    async def spa_fallback(full_path: str):
+        index_path = os.path.join(FRONTEND_DIR, "index.html")
+        if os.path.isfile(index_path):
+            return FileResponse(index_path)
+        return {"detail": "Frontend not found"}
+
     print(f"[startup] Serving frontend from {FRONTEND_DIR}")
 
 if __name__ == "__main__":
