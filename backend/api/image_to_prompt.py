@@ -1,9 +1,9 @@
-"""图片反推提示词 — 利用 Claude Vision 分析图片并生成 AI 绘图提示词"""
+"""图片反推提示词 — 利用通义千问 Vision 分析图片并生成 AI 绘图提示词"""
 import base64
 import os
 import json
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from anthropic import Anthropic
+from openai import OpenAI
 
 router = APIRouter()
 
@@ -56,43 +56,42 @@ async def image_to_prompt(
     if len(image_bytes) > MAX_SIZE:
         raise HTTPException(400, "Image too large (max 4MB)")
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "") or os.environ.get("ANTHROPIC_API_KEY", "")
+    api_key = os.environ.get("DASHSCOPE_API_KEY", "")
     print(f"[img2prompt] API key present: {bool(api_key)}, length: {len(api_key)}")
 
     if not api_key:
-        raise HTTPException(503, "AI service not configured (missing API key)")
+        raise HTTPException(503, "AI service not configured (missing DASHSCOPE_API_KEY)")
 
-    client = Anthropic(api_key=api_key)
+    client = OpenAI(
+        api_key=api_key,
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    )
 
     # Base64 编码
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
     media_type = image.content_type
 
     try:
-        resp = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=2000,
-            system=SYSTEM_PROMPT,
+        resp = client.chat.completions.create(
+            model="qwen-vl-max",
             messages=[{
                 "role": "user",
                 "content": [
                     {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": media_type,
-                            "data": image_b64,
-                        }
+                        "type": "image_url",
+                        "image_url": {"url": f"data:{media_type};base64,{image_b64}"},
                     },
                     {
                         "type": "text",
-                        "text": "Analyze this image and generate the prompt JSON. Return ONLY valid JSON, no markdown code blocks."
+                        "text": "Analyze this image and generate the prompt JSON. Return ONLY valid JSON, no markdown code blocks.",
                     }
                 ]
-            }]
+            }],
+            max_tokens=2000,
+            temperature=0.7,
         )
 
-        text = resp.content[0].text.strip()
+        text = resp.choices[0].message.content.strip()
 
         # 处理 markdown code block 包装
         if text.startswith("```"):
@@ -115,9 +114,8 @@ async def image_to_prompt(
         return result
 
     except json.JSONDecodeError:
-        # 如果解析失败，返回原始文本作为 prompt
         return {
-            "prompt": text[:500],
+            "prompt": text[:500] if 'text' in dir() else "",
             "prompt_cn": "",
             "style": "unknown",
             "composition": "",
@@ -128,10 +126,10 @@ async def image_to_prompt(
             "category": "其他",
             "negative_prompt": "",
             "prompts": {
-                "general": text[:500],
-                "midjourney": text[:500],
-                "sd": text[:500],
-                "flux": text[:500],
+                "general": text[:500] if 'text' in dir() else "",
+                "midjourney": text[:500] if 'text' in dir() else "",
+                "sd": text[:500] if 'text' in dir() else "",
+                "flux": text[:500] if 'text' in dir() else "",
             }
         }
     except Exception as e:
