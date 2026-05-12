@@ -8,6 +8,7 @@ import Generate from './pages/Generate'
 import Trends from './pages/Trends'
 import Import from './pages/Import'
 import Collect from './pages/Collect'
+import ImageToPrompt from './pages/ImageToPrompt'
 import Login from './pages/Login'
 import Register from './pages/Register'
 
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/prompt/:id" element={<Detail />} />
             <Route path="/generate" element={<Generate />} />
+            <Route path="/image-to-prompt" element={<ImageToPrompt />} />
             <Route path="/trends" element={<Trends />} />
             <Route path="/import" element={<Import />} />
             <Route path="/login" element={<Login />} />

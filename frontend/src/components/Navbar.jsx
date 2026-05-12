@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 const publicLinks = [
   { to: '/', label: '提示词库' },
   { to: '/generate', label: 'AI生成' },
+  { to: '/image-to-prompt', label: '图转提示词' },
   { to: '/trends', label: '趋势' },
   { to: '/import', label: '数据导入' },
 ];
