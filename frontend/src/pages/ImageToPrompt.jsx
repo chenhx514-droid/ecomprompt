@@ -1,6 +1,36 @@
 import { useState, useRef } from 'react';
 import axios from 'axios';
 
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const MAX_SIZE = 1024;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width <= MAX_SIZE && height <= MAX_SIZE) {
+          resolve(file);
+          return;
+        }
+        if (width > height) { height = Math.round(height * MAX_SIZE / width); width = MAX_SIZE; }
+        else { width = Math.round(width * MAX_SIZE / height); height = MAX_SIZE; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+        }, 'image/jpeg', 0.85);
+      };
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 const FORMats = [
   { key: 'general', label: '通用提示词', icon: '✦' },
   { key: 'midjourney', label: 'Midjourney', icon: '🎨' },
@@ -46,17 +76,23 @@ export default function ImageToPrompt() {
     setResult(null);
 
     try {
+      const compressed = await compressImage(image);
       const form = new FormData();
-      form.append('image', image);
+      form.append('image', compressed);
       form.append('model_format', format);
 
       const { data } = await axios.post('/api/image-to-prompt', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120000,
       });
       setResult(data);
     } catch (err) {
-      const msg = err.response?.data?.detail || err.message;
-      setError(msg);
+      if (err.code === 'ECONNABORTED') {
+        setError('请求超时，图片可能太大，请尝试较小的图片（建议小于 1MB）');
+      } else {
+        const msg = err.response?.data?.detail || err.message;
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
