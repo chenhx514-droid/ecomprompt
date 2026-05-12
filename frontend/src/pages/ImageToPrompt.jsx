@@ -107,7 +107,7 @@ export default function ImageToPrompt() {
   const displayPrompt = result?.prompts?.[format] || result?.prompt || '';
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className={`max-w-4xl mx-auto px-4 py-8 ${result ? 'pb-20' : ''}`}>
       <h1 className="text-2xl font-bold text-white mb-2">图片反推提示词</h1>
       <p className="text-gray-400 mb-8">上传一张图片，AI 自动分析并生成可用于 AI 绘图工具的提示词</p>
 
@@ -281,6 +281,29 @@ export default function ImageToPrompt() {
               <p className="text-gray-300 text-sm">{result.composition}</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Fixed Bottom Copy Bar */}
+      {result && (
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-700 z-50">
+          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs text-gray-500 bg-gray-800 px-2 py-0.5 rounded">
+                  {FORMats.find(f => f.key === format)?.label}
+                </span>
+                <span className="text-xs text-gray-600">一键复制提示词</span>
+              </div>
+              <p className="text-gray-300 text-sm truncate">{displayPrompt}</p>
+            </div>
+            <button
+              onClick={() => copyText(displayPrompt)}
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white font-semibold text-sm transition-colors flex-shrink-0"
+            >
+              {copied ? '已复制 ✓' : '复制提示词'}
+            </button>
+          </div>
         </div>
       )}
     </div>
