@@ -91,14 +91,17 @@ print(f"[startup] FRONTEND_DIR={FRONTEND_DIR} exists={os.path.isdir(FRONTEND_DIR
 if os.path.isdir(FRONTEND_DIR):
     app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="frontend_assets")
 
-    # SPA fallback: serve index.html for any unmatched route
+    # SPA fallback middleware
     from starlette.responses import FileResponse
-    @app.get("/{full_path:path}")
-    async def spa_fallback(full_path: str):
-        index_path = os.path.join(FRONTEND_DIR, "index.html")
-        if os.path.isfile(index_path):
-            return FileResponse(index_path)
-        return {"detail": "Frontend not found"}
+    from fastapi import Request
+    @app.middleware("http")
+    async def spa_middleware(request: Request, call_next):
+        response = await call_next(request)
+        if response.status_code == 404 and not request.url.path.startswith("/api/"):
+            index_path = os.path.join(FRONTEND_DIR, "index.html")
+            if os.path.isfile(index_path):
+                return FileResponse(index_path, status_code=200)
+        return response
 
     print(f"[startup] Serving frontend from {FRONTEND_DIR}")
 
