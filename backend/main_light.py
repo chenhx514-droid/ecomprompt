@@ -49,6 +49,7 @@ from api.import_data import router as import_router
 from api.collect import router as collect_router
 from api.auth import router as auth_router
 from api.image_to_prompt import router as image_to_prompt_router
+from api.library import router as library_router
 
 app.include_router(prompts_router, prefix="/api", tags=["prompts"])
 app.include_router(trends_router, prefix="/api", tags=["trends"])
@@ -56,6 +57,7 @@ app.include_router(import_router, prefix="/api", tags=["import"])
 app.include_router(collect_router, prefix="/api", tags=["collect"])
 app.include_router(auth_router, prefix="/api", tags=["auth"])
 app.include_router(image_to_prompt_router, prefix="/api", tags=["image-to-prompt"])
+app.include_router(library_router, prefix="/api", tags=["library"])
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

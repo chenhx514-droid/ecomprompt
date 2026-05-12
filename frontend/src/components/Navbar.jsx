@@ -14,7 +14,7 @@ export default function Navbar() {
   const { user, logout } = useAuth();
 
   const links = user
-    ? [...publicLinks, { to: '/collect', label: '收录' }]
+    ? [...publicLinks, { to: '/collect', label: '收录' }, { to: '/library', label: '我的仓库' }]
     : publicLinks;
 
   return (

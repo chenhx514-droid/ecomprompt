@@ -92,3 +92,19 @@ export async function collectPrompt({ title, category, scenario, platform, outpu
   });
   return data;
 }
+
+// --- 个人仓库 ---
+export async function fetchLibraryStats() {
+  const { data } = await api.get('/library/stats');
+  return data;
+}
+
+export async function deleteLibraryPrompt(id) {
+  const { data } = await api.delete(`/library/${id}`);
+  return data;
+}
+
+export async function moveLibraryPrompt(id, folder) {
+  const { data } = await api.put(`/library/${id}/folder`, null, { params: { folder } });
+  return data;
+}

@@ -8,6 +8,7 @@ import Generate from './pages/Generate'
 import Trends from './pages/Trends'
 import Import from './pages/Import'
 import Collect from './pages/Collect'
+import Library from './pages/Library'
 import ImageToPrompt from './pages/ImageToPrompt'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -29,6 +30,9 @@ export default function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/collect" element={
               <ProtectedRoute><Collect /></ProtectedRoute>
+            } />
+            <Route path="/library" element={
+              <ProtectedRoute><Library /></ProtectedRoute>
             } />
           </Routes>
         </main>
