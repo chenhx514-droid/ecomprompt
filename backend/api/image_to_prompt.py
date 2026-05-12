@@ -6,7 +6,6 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from anthropic import Anthropic
 
 router = APIRouter()
-client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
 
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 MAX_SIZE = 4 * 1024 * 1024  # 4MB
@@ -57,8 +56,13 @@ async def image_to_prompt(
     if len(image_bytes) > MAX_SIZE:
         raise HTTPException(400, "Image too large (max 4MB)")
 
-    if not client.api_key:
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "") or os.environ.get("ANTHROPIC_API_KEY", "")
+    print(f"[img2prompt] API key present: {bool(api_key)}, length: {len(api_key)}")
+
+    if not api_key:
         raise HTTPException(503, "AI service not configured (missing API key)")
+
+    client = Anthropic(api_key=api_key)
 
     # Base64 编码
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
