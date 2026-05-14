@@ -215,12 +215,28 @@ class GptImage2Crawler(BaseCrawler):
             return "B"
         return "A"
 
+    def _fetch_robust(self, url, retries=3):
+        """带重试和更长超时的 fetch，适配 Render 等网络慢的环境"""
+        import httpx
+        for attempt in range(retries):
+            try:
+                with httpx.Client(timeout=90) as client:
+                    resp = client.get(url, headers={
+                        "User-Agent": "Mozilla/5.0 (compatible; EcomPrompt/1.0)"
+                    })
+                    resp.raise_for_status()
+                    return resp.text
+            except Exception as e:
+                print(f"[gptimage2] Attempt {attempt+1}/{retries} failed for {url}: {e}")
+                if attempt == retries - 1:
+                    raise
+
     def _fetch_and_parse_file(self, github_category):
         """下载一个类别的 markdown 文件并解析所有 case"""
         url = f"{self.RAW_BASE}/cases/{github_category}.md"
         print(f"[gptimage2] Fetching {url}")
         try:
-            text = self.fetch(url)
+            text = self._fetch_robust(url)
         except Exception as e:
             print(f"[gptimage2] Failed to fetch {github_category}: {e}")
             return []
@@ -246,16 +262,32 @@ class GptImage2Crawler(BaseCrawler):
 
         return items
 
+    def _load_seed(self):
+        """从 gzip 种子文件加载备选数据"""
+        import json, gzip, os
+        seed_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gptimage2_seed.json.gz")
+        if os.path.exists(seed_path):
+            with gzip.open(seed_path, "rt", encoding="utf-8") as f:
+                return json.load(f)
+        return []
+
     def run(self):
-        """主入口 — 抓取所有 7 个文件并保存"""
+        """主入口 — 抓取所有 7 个文件并保存，失败时回退到种子数据"""
         all_items = []
         for github_category in self.CATEGORY_FILES:
-            items = self._fetch_and_parse_file(github_category)
-            print(f"[gptimage2] {github_category}: {len(items)} prompts parsed")
-            all_items += items
+            try:
+                items = self._fetch_and_parse_file(github_category)
+                print(f"[gptimage2] {github_category}: {len(items)} prompts parsed")
+                all_items += items
+            except Exception as e:
+                print(f"[gptimage2] Error processing {github_category}: {e}")
 
         if not all_items:
-            print("[gptimage2] No items parsed, skipping save")
+            print("[gptimage2] Live fetch produced 0 items, loading seed data...")
+            all_items = self._load_seed()
+
+        if not all_items:
+            print("[gptimage2] No items (seed also empty), skipping save")
             return 0
 
         count = self.save_to_db(all_items)
