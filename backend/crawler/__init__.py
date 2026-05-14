@@ -7,6 +7,7 @@ from .runninghub import RunninghubCrawler
 from .youmind import YoumindCrawler
 from .twitter import TwitterCrawler
 from .gptimage2 import GptImage2Crawler
+from .neospark import NeoSparkCrawler
 
 CRAWLERS = {
     "liblib": LiblibCrawler(),
@@ -16,6 +17,7 @@ CRAWLERS = {
     "youmind": YoumindCrawler(),
     "twitter": TwitterCrawler(),
     "gptimage2": GptImage2Crawler(),
+    "neospark": NeoSparkCrawler(),
     "promptbase": PromptBaseCrawler(),
     "xiaohongshu": XiaohongshuCrawler(),
 }
